@@ -48,7 +48,7 @@ class App {
    * Établie la connexion à la base de données
    */
   public connectDatabase() {
-    mongoose.connect('mongodb+srv://' + process.env.MONGO_USER + ':' + process.env.MONGO_PASSWORD + process.env.MONGO_PATH + '/?retryWrites=true&w=majority');
+    mongoose.connect('mongodb+srv://' + process.env.MONGO_USER + ':' + process.env.MONGO_PASSWORD + process.env.MONGO_PATH + '/' + process.env.MONGO_DBNAME + '?retryWrites=true&w=majority');
     const db = mongoose.connection;
 
     db.on('error', console.error.bind(console, 'Erreur de connexion a la base de base de donnees'));

@@ -6,7 +6,6 @@ import bcrypt from 'bcrypt';
 import JwtService from '../../services/jwtService';
 import UserModel from '../../models/User/User.model';
 import UserDto from '../../models/User/User.dto';
-import { Error } from 'mongoose';
 
 /**
  * User Controller
@@ -35,12 +34,16 @@ class UserController implements ControllerInterface {
             const hashedPassword = await bcrypt.hash(request.body.password, saltRounds);
 
             const user = new UserModel({
+                username: request.body.username,
                 mail: request.body.mail,
                 password: hashedPassword,
                 role: request.body.role
             });
 
             const newDbUSer = await user.save();
+
+            // remove salted password from user before send it back
+            delete newDbUSer.password;
             response.status(201).json(newDbUSer);
         } catch (error: any) {
             response.status(400).json({ message: error.message });
@@ -53,7 +56,7 @@ class UserController implements ControllerInterface {
         try {
             const errorMessage = "Utilisateur ou mot de passe incorrect.";
             // Type UserDto si non vide
-            const user: UserDto = await UserModel.findOne({ $or: [{ mail }] });
+            const user: UserDto = await UserModel.findOne({ $or: [{ mail }] }) as UserDto;
 
             if (!user) {
                 return response.status(401).json({ message: errorMessage })
