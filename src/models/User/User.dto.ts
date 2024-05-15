@@ -4,7 +4,7 @@ class UserDto {
 
     @IsString()
     @MaxLength(50, {
-        message: 'Description is too long'
+        message: 'username is too long'
     })
     public username: string;
 
