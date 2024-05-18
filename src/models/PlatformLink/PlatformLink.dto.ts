@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsMongoId } from "class-validator";
+import { IsBoolean, IsDate, IsMongoId, IsString } from "class-validator";
 
 class PlatformLinkDTO {
     @IsMongoId()
@@ -10,16 +10,24 @@ class PlatformLinkDTO {
     @IsBoolean()
     isActive: boolean;
 
+    @IsString()
+    token: string;
+
+    @IsDate()
+    tokenExpiresAt: Date;
+
     @IsDate()
     createdAt: Date;
     
     @IsDate()
     updatedAt: Date;
 
-    constructor(user: string, platform: string, isActive: boolean, createdAt: Date, updatedAt: Date) {
+    constructor(user: string, platform: string, isActive: boolean, token: string, tokenExpiresAt: Date, createdAt: Date, updatedAt: Date) {
         this.user = user;
         this.platform = platform;
         this.isActive = isActive;
+        this.token = token;
+        this.tokenExpiresAt = tokenExpiresAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }

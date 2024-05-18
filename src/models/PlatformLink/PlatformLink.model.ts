@@ -4,6 +4,8 @@ const platformLinkSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     platform: { type: mongoose.Schema.Types.ObjectId, ref: 'Platform' },
     isActive: Boolean,
+    token: String,
+    tokenExpiresAt: Date,
     createdAt: Date,
     updatedAt: Date
 });
