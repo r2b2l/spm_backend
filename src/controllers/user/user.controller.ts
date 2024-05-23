@@ -26,6 +26,7 @@ class UserController implements ControllerInterface {
         this.router.post('/login', this.login.bind(this)); // Bind this to login function to be able to call this.jwtService
         this.router.post(this.path + '/create', this.createUser);
         this.router.post('/resetPassword', this.resetPassword);
+        this.router.get(this.path + '/mail', this.getUserByMail);
     }
 
     async createUser(request: express.Request, response: express.Response) {
@@ -70,6 +71,22 @@ class UserController implements ControllerInterface {
             await UserModel.updateOne({username: user.username}).set({ authToken: token, tokenExpiresAt: new Date(), updatedAt: new Date()});
 
             response.status(200).json({ isSuccess: true, token });
+        } catch (error: any) {
+            response.status(500).json({ message: error.message });
+        }
+    }
+
+    async getUserByMail(request: express.Request, response: express.Response) {
+        const mail: string = request.body.mail;
+        try {
+            const errorMessage = "Utilisateur incorrect.";
+            const user = await UserModel.findOne({ $or: [{ mail }] });
+
+            if (!user) {
+                return response.status(401).json({ message: errorMessage })
+            }
+
+            response.status(200).json({ isSuccess: true, user });
         } catch (error: any) {
             response.status(500).json({ message: error.message });
         }

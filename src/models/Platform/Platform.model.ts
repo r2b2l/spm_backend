@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, ObjectId } from "mongoose";
 
 const platformSchema = new mongoose.Schema({
     id: { type: Number, unique: true},

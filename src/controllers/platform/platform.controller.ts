@@ -52,11 +52,12 @@ class PlatformController implements ControllerInterface {
         this.router.patch(this.path + '/:id', this.updatePlatform);
         this.router.get(this.path + '/connect/spotify', passport.authenticate(
             'spotify',
-            { scope: ['user-read-email', 'user-read-private']}
+            { scope: ['user-read-email', 'user-read-private'] }
         ));
         this.router.get(this.path + '/connect/spotify/callback', passport.authenticate('spotify', {
             failureRedirect: '/login',
-            successRedirect: this.path + '/spotify/profile'
+            successRedirect: this.path + '/spotify/profile',
+            session: false
         }));
     }
 
@@ -75,23 +76,25 @@ class PlatformController implements ControllerInterface {
         }, async (req: express.Request, accessToken: any, refreshToken: any, expiresIn: any, profile: any, done: any) => {
             try {
                 const authToken = req.headers.authorization;
-                const user = UserModel.findOne({ authToken });
-                const platform = PlatformModel.findOne({ id: 'spotify' });
+                const user = await UserModel.findOne({ authToken });
+                if (!user) return done(null, false);
+                const platform = await PlatformModel.findOne({ id: 1 }); // Enumération Spotify
+                if (!platform) return done(null, false);
 
                 // Create the link between the user and the platform
                 const platformLink = new PlatformLinkModel({
-                user,
-                platform,
-                isActive: true,
-                token: accessToken,
-                tokenExpiresAt: expiresIn,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            });
+                    user: user._id,
+                    platform: platform._id,
+                    isActive: true,
+                    token: accessToken,
+                    tokenExpiresAt: expiresIn,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
 
-            await platformLink.save();
-            return done(null, { profile, accessToken, refreshToken, expiresIn });
 
+                await platformLink.save();
+                return done(null, { profile, accessToken, refreshToken, expiresIn });
             } catch (error: any) {
                 console.log(error);
                 return done(error, null);

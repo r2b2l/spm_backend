@@ -34,6 +34,27 @@ class App {
     this.app.use(bodyParser.json());
     this.app.use(logRequestMiddleware);
     this.app.use(verifyTokenMiddleware);
+
+    /**
+     * PassportJS section
+     * Needs express-session to store user session
+     */
+    // const passport = require('passport');
+    // const session = require('express-session');
+    // this.app.use(
+    //   session({secret: process.env.SESSION_SECRET, resave: true, saveUninitialized: true})
+    // );
+    // // Initialize Passport!  Also use passport.session() middleware, to support
+    // // persistent login sessions (recommended).
+    // this.app.use(passport.initialize());
+    // this.app.use(passport.session());
+
+    // passport.serializeUser(function(user: any, done: any) {
+    //   done(null, user);
+    // });
+    // passport.deserializeUser(function(user: any, done: any) {
+    //   done(null, user);
+    // });
   }
 
   public initializeControllers(controllers: any) {

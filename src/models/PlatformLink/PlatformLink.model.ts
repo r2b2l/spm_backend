@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const platformLinkSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    platform: { type: mongoose.Schema.Types.ObjectId, ref: 'Platform' },
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    platform: { type: Schema.Types.ObjectId, ref: 'Platform' },
     profileId: String,
     isActive: Boolean,
     token: String,
