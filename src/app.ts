@@ -17,6 +17,8 @@ class App {
   constructor(controllers: any, port: any) {
     this.app = express();
 
+    // When in production use __dirname to have static folder, when in dev use src
+    this.app.use('/static', express.static('./src/public'));
     this.app.use(bodyParser.json()); // for parsing application/json
     this.app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
     this.port = port;
@@ -36,10 +38,12 @@ class App {
 
   public initializeControllers(controllers: any) {
     controllers.forEach((controller: any) => {
-      if (controller.path !== '/login' || controller.path !== '/user/create') {
+      if (controller.path !== '/login' ||
+      controller.path !== '/user/create' ||
+      controller.path !== '/platform/connect/Spotify/callback') {
         this.app.use('', controller.router);
       }
-      // If route is /login, don't attach token verification middleware, even if already check '/login'
+      // If route is in the list, don't attach token verification middleware, even if already check '/login'
       this.app.use('', controller.router);
     });
   }

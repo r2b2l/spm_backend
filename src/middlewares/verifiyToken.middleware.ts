@@ -16,7 +16,9 @@ function verifyTokenMiddleware(request: Request, response: Response, next: NextF
     const FAILURE_MESSAGE = { isSuccess: false, reason: 'INVALID_TOKEN' };
 
     // If /login or /user/create, don't verify token
-    if (request.path === '/login' || request.path === '/user/create') {
+    if (request.path === '/login' || request.path === '/user/create' || request.path.startsWith('/static')
+        || request.path.startsWith('/platform/connect') // TEST
+    ) {
         return next();
     }
 

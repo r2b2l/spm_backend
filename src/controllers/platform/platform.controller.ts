@@ -5,7 +5,24 @@ import PlatformDto from '../../models/Platform/Platform.dto';
 import PlatformLinkModel from '../../models/PlatformLink/PlatformLink.model';
 import UserModel from '../../models/User/User.model';
 import UtilsService from '../../services/utilsService';
-import axios from 'axios';
+
+// const passport = require('passport');
+// const SpotifyStrategy = require('passport-spotify').Strategy;
+
+// Passport session setup.
+//   To support persistent login sessions, Passport needs to be able to
+//   serialize users into and deserialize users out of the session. Typically,
+//   this will be as simple as storing the user ID when serializing, and finding
+//   the user by ID when deserializing. However, since this example does not
+//   have a database of user records, the complete spotify profile is serialized
+//   and deserialized.
+// passport.serializeUser(function (user, done) {
+//     done(null, user);
+//   });
+
+//   passport.deserializeUser(function (obj, done) {
+//     done(null, obj);
+//   });
 
 /**
  * Plaform Controller
@@ -14,22 +31,72 @@ import axios from 'axios';
  * Controller for managing platform-related operations.
  */
 class PlatformController implements ControllerInterface {
+
     public path = '/platform';
     public router = express.Router();
     private utilsService = new UtilsService();
 
     constructor() {
         this.initializeRoutes();
+        this.initStrategies();
     }
 
     /**
      * Initializes all routes for the platform controller.
      */
     public initializeRoutes() {
+        const passport = require('passport');
         // this.router.post('/', this.login.bind(this)); // Bind this to login function to be able to call this.jwtService
         this.router.post(this.path + '/create', this.createPlatform);
         this.router.get(this.path + '/:id', this.getPlatformInformationsById);
         this.router.patch(this.path + '/:id', this.updatePlatform);
+        this.router.get(this.path + '/connect/spotify', passport.authenticate(
+            'spotify',
+            { scope: ['user-read-email', 'user-read-private']}
+        ));
+        this.router.get(this.path + '/connect/spotify/callback', passport.authenticate('spotify', {
+            failureRedirect: '/login',
+            successRedirect: this.path + '/spotify/profile'
+        }));
+    }
+
+    /**
+     * Initializes all strategies for the platform controller.
+     * TODO: Type variables to avoid any
+     */
+    private initStrategies() {
+        const passport = require('passport');
+        const SpotifyStrategy = require('passport-spotify').Strategy;
+        passport.use(new SpotifyStrategy({
+            clientID: process.env.SPOTIFY_CLIENT_ID,
+            clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+            callbackURL: process.env.SPOTIFY_CALLBACK_URL,
+            passReqToCallback: true
+        }, async (req: express.Request, accessToken: any, refreshToken: any, expiresIn: any, profile: any, done: any) => {
+            try {
+                const authToken = req.headers.authorization;
+                const user = UserModel.findOne({ authToken });
+                const platform = PlatformModel.findOne({ id: 'spotify' });
+
+                // Create the link between the user and the platform
+                const platformLink = new PlatformLinkModel({
+                user,
+                platform,
+                isActive: true,
+                token: accessToken,
+                tokenExpiresAt: expiresIn,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+
+            await platformLink.save();
+            return done(null, { profile, accessToken, refreshToken, expiresIn });
+
+            } catch (error: any) {
+                console.log(error);
+                return done(error, null);
+            }
+        }));
     }
 
     /**
@@ -60,6 +127,7 @@ class PlatformController implements ControllerInterface {
     }
 
     /**
+     * SPOTIFY HANDCRAFTED
      * Create a connection of an user and a platform.
      *
      * @param request - The HTTP request object.
@@ -84,7 +152,7 @@ class PlatformController implements ControllerInterface {
             }
 
             // Check if the user has already a link with the platform
-            const platformLink = await PlatformLinkModel.findOne({ user: user, platform: platform });
+            const platformLink = await PlatformLinkModel.findOne({ user, platform });
 
             if (platformLink) {
                 return response.status(401).json({ message: "L'utilisateur est déjà connecté à la plateforme." });
@@ -101,7 +169,7 @@ class PlatformController implements ControllerInterface {
 
                 const scope = 'user-read-private user-read-email';
 
-    
+
                 response.status(200).json([]);
             }
         }
@@ -111,28 +179,30 @@ class PlatformController implements ControllerInterface {
     }
 
     /**
+     * SPOTIFY HANDCRAFTED
      * Callback function called by the platform after the user has connected or not.
      * Creates the link between the user and the platform if user has accepted the connection.
-     * @param request 
-     * @param response 
+     * @param request
+     * @param response
      */
     async connectCallback(request: express.Request, response: express.Response) {
-        let isConnectionAccepted = true;
+        const isConnectionAccepted = true;
         if (isConnectionAccepted) {
             // Create the link between the user and the platform
-            const platformLink = new PlatformLinkModel({
-                user: user,
-                platform: platform,
-                isActive: true,
-                token: '',
-                tokenExpiresAt: new Date(),
-                createdAt: new Date(),
-                updatedAt: new Date()
-            });
+            // const platformLink = new PlatformLinkModel({
+            //     user,
+            //     platform,
+            //     isActive: true,
+            //     token: '',
+            //     tokenExpiresAt: new Date(),
+            //     createdAt: new Date(),
+            //     updatedAt: new Date()
+            // });
 
-            const newPlatformLink = await platformLink.save();
+            // const newPlatformLink = await platformLink.save();
 
-            response.status(201).json(newPlatformLink);
+            response.status(201).json([]);
+            // response.status(201).json(newPlatformLink);
         }
     }
 

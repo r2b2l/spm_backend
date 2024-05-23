@@ -7,6 +7,9 @@ class PlatformLinkDTO {
     @IsMongoId()
     platform: string;
 
+    @IsString()
+    profileId: string;
+
     @IsBoolean()
     isActive: boolean;
 
@@ -18,13 +21,14 @@ class PlatformLinkDTO {
 
     @IsDate()
     createdAt: Date;
-    
+
     @IsDate()
     updatedAt: Date;
 
-    constructor(user: string, platform: string, isActive: boolean, token: string, tokenExpiresAt: Date, createdAt: Date, updatedAt: Date) {
+    constructor(user: string, platform: string, profileId: string, isActive: boolean, token: string, tokenExpiresAt: Date, createdAt: Date, updatedAt: Date) {
         this.user = user;
         this.platform = platform;
+        this.profileId = profileId;
         this.isActive = isActive;
         this.token = token;
         this.tokenExpiresAt = tokenExpiresAt;

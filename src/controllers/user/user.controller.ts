@@ -52,7 +52,6 @@ class UserController implements ControllerInterface {
 
     async login(request: express.Request, response: express.Response) {
         const { mail, password } = request.body;
-
         try {
             const errorMessage = "Utilisateur ou mot de passe incorrect.";
             // Type UserDto si non vide
@@ -66,7 +65,10 @@ class UserController implements ControllerInterface {
             if (!isPasswordValid) {
                 return response.status(401).json({ message: errorMessage });
             }
+
             const token = this.jwtService.generateToken(user.mail);
+            await UserModel.updateOne({username: user.username}).set({ authToken: token, tokenExpiresAt: new Date(), updatedAt: new Date()});
+
             response.status(200).json({ isSuccess: true, token });
         } catch (error: any) {
             response.status(500).json({ message: error.message });

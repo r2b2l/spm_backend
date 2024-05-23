@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html id="app" lang="fr" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>Connexion - Spotify</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <base href="/">
+  <link rel="icon" href="https://accounts.scdn.co/sso/images/favicon.ace4d8543bbb017893402a1e9d1ac1fa.ico">
+  <script defer src="https://accounts.scdn.co/sso/js/indexReact.ae65d06462d78f07ed28.js" sp-bootstrap></script>
+  <meta id="bootstrap-data" sp-bootstrap-data='{"phoneFeatureEnabled":false,"previewEnabled":false,"user":false,"tpaState":"AQDvvkXspUQdw6x5LHThQEihOkJ/NPVpHLofkyNYOBTbWmdD22ONHe/uzfhzeDW5I2gezxRzS+DKUoVTRLvHcbNfQLUJRnfBSPRVmVqEP8v6cxO5U3T7IzWokbVJCdhCnb/t8vv+Lc3qxj8C8UMlw19BO9QNv49SZiiRL3zB8SD3Po/gTJ0EJXGzEMBp82op/tsF9dNakszwhLvaWTDADfgrYHotEBveAzLzAKKJ08WJkbIw15GHmXPO251HulN7LHrPJK96nPTMez7AUBs6hdayAnP+650mW7zcdg0sQiVFtNPSokexo6ofZCxoIaUtOkNGc0rsziXf/OHRAneFwx0n3WspNHPSfle13vw3nJWA6HTbuviqILTeJvSa4c9voQsS6kZMTlshXmSBCHNYwxSKj+nx1AulWP4npX48b0noZHVZFNyAlsNqecKmoPQSin0e+o9UXlp9vn1almqGLmtCfQkIWTMKDI44nW0pxR0eLYwdIRpNTpw5l2WSDR+8oNpTOkHseoNZA3+qBIRzTn3/aEhlMJvXh04vrXJAiHDP26ojchGSR5+s6JhJlUvtgimbE8s=","geoLocationCountryCode":"FR","state":"","flowCtx":"5d0ad650-25bb-441a-aafd-2c24bca8e825:1716479804","BON":["0","0",310350411]}' sp-component="login" sp-translations-data='eyJlcnJvclRpdGxlIjoiRXJyZXVyIiwibG9naW5UaXRsZSI6IkNvbm5leGlvbiIsImZvcmdvdFlvdXJQYXNzd29yZFVzZXJuYW1lIjoiTW90IGRlIHBhc3NlIG91Ymxpw6kgPyIsImRvbnRIYXZlQW5BY2NvdW50IjoiVm91cyBuJ2F2ZXogcGFzIGRlIGNvbXB0ZSA/IiwiaW5wdXRVc2VybmFtZSI6IkFkcmVzc2UgZW1haWwgb3Ugbm9tIGQndXRpbGlzYXRldXIiLCJpbnB1dEVtYWlsT3JVc2VybmFtZSI6IkFkcmVzc2UgZS1tYWlsIG91IG5vbSBkJ3V0aWxpc2F0ZXVyIiwiaW5wdXRQYXNzd29yZCI6Ik1vdCBkZSBwYXNzZSIsImNoZWNrYm94UmVtZW1iZXJNZSI6IlNlIHNvdXZlbmlyIGRlIG1vaSIsImVycm9yRm9ybURlZmF1bHQiOiJPdXBzwqAhIFVuZSBlcnJldXIgcydlc3QgcHJvZHVpdGUuIFLDqWVzc2F5ZXogb3UgY29uc3VsdGV6IG5vdHJlIDxoZWxwTGluaz5ydWJyaXF1ZSBkJ2FpZGU8L2hlbHBMaW5rPiIsImVycm9ySW52YWxpZENyZWRlbnRpYWxzIjoiTm9tIGQndXRpbGlzYXRldXIgb3UgbW90IGRlIHBhc3NlIGluY29ycmVjdC4iLCJlcnJvckludmFsaWRDcmVkZW50aWFsc0ltcHJvdmVkIjoiQWRyZXNzZSBlLW1haWwsIG5vbSBkJ3V0aWxpc2F0ZXVyIG91IG1vdCBkZSBwYXNzZSBpbmNvcnJlY3QuIiwiZXJyb3JVbmtub3duIjoiT3Vwc8KgISBVbmUgZXJyZXVyIHMnZXN0IHByb2R1aXRlLiBSw6llc3NheWV6IG91IGNvbnN1bHRleiBub3RyZSA8aGVscExpbms+cnVicmlxdWUgZCdhaWRlPC9oZWxwTGluaz4iLCJlcnJvclRyYW5zaWVudCI6IlVuZSBlcnJldXIgcydlc3QgcHJvZHVpdGUgbG9ycyBkZSB2b3RyZSBjb25uZXhpb24uIFZldWlsbGV6IHLDqWVzc2F5ZXIuIiwiZXJyb3JGYWNlYm9va0FjY291bnQiOiJBdWN1biBjb21wdGXCoFNwb3RpZnkgbidlc3QgYXNzb2Npw6kgw6Agdm90cmUgY29tcHRlwqBGYWNlYm9vay4gU2kgdm91cyBhdmV6IHVuIGNvbXB0ZcKgU3BvdGlmeSwgY29ubmVjdGV6LXZvdXMgYXZlYyB2b3MgaWRlbnRpZmlhbnRzwqBTcG90aWZ5LiBTaSB2b3VzIG4nYXZleiBwYXMgZGUgY29tcHRlwqBTcG90aWZ5LCA8bGlua1dpdGhIcmVmPmluc2NyaXZlei12b3VzPC9saW5rV2l0aEhyZWY+LiIsImVycm9yU2VydmVyRXJyb3IiOiJVbmUgZXJyZXVyIHMnZXN0IHByb2R1aXRlIGxvcnMgZHUgdHJhaXRlbWVudCBkZSB2b3RyZSBkZW1hbmRlLiBWZXVpbGxleiByw6llc3NheWVyLiIsImVycm9yVXNlcm5hbWVSZXF1aXJlZCI6IlZldWlsbGV6IHNhaXNpciB2b3RyZSBub20gZCd1dGlsaXNhdGV1ciBTcG90aWZ5IG91IHZvdHJlIGFkcmVzc2UgZS1tYWlsLiIsImVycm9yVXNlcm5hbWVJbnZhbGlkQ2hhcmFjdGVycyI6IkNhcmFjdMOocmUocykgaW50ZXJkaXQocykge2ZvcmJpZGRlbkNoYXJzfSBkYW5zIGxlIG5vbSBkJ3V0aWxpc2F0ZXVyLiIsImVycm9yUGFzc3dvcmRSZXF1aXJlZCI6IkVudHJleiB2b3RyZSBtb3QgZGUgcGFzc2UuIiwiZXJyb3JOb0ludGVybmV0Q29ubmVjdGl2aXR5IjoiUHJvYmzDqG1lIGRlIGNvbm5leGlvbi4gVsOpcmlmaWV6IHZvdHJlIGNvbm5leGlvbsKgSW50ZXJuZXQsIHB1aXMge3RyeUFnYWluTGlua30uIiwiZXJyb3JUcnlBZ2FpbiI6InLDqWVzc2F5ZXoiLCJsb2dJbiI6IlNlIENvbm5lY3RlciIsImxvZ0luVG9TcG90aWZ5IjoiSidhaSB1biBjb21wdGUgU3BvdGlmeSIsInNpZ25VcEZvclNwb3RpZnkiOiJTJ2luc2NyaXJlIMOgIFNwb3RpZnkiLCJvciI6Im91IiwibG9naW5Ub0NvbnRpbnVlIjoiUG91ciBjb250aW51ZXIsIGNvbm5lY3Rlei12b3VzIMOgIFNwb3RpZnkuIiwiZXJyb3JWYWxpZGF0aW9uSW52YWxpZENvZGUiOiJDZSBjb2RlIGVzdCBub24gdmFsaWRlLiBDb250csO0bGV6IGRlIG5vdXZlYXUgbGUgU01TIGV0IHLDqWVzc2F5ZXouIiwiZXJyb3JWYWxpZGF0aW9uSW52YWxpZENvZGVHZW5lcmljIjoiQ2UgY29kZSBuJ2VzdCBwYXMgdmFsaWRlLiBWw6lyaWZpZXogbGUgY29kZSBldCByw6llc3NheWV6LiIsImVycm9yU3VibWl0VG9va1Rvb0xvbmdUb0NyZWF0ZSI6IkwnZXjDqWN1dGlvbiBkZSB2b3RyZSBkZW1hbmRlIGEgcHJpcyB0cm9wIGRlIHRlbXBzLiBWZXVpbGxleiByw6llc3NheWVyLiIsImVycm9yQXBwbGVBY2NvdW50IjoiQXVjdW4gY29tcHRlIFNwb3RpZnkgbidlc3QgYXNzb2Npw6kgw6Agdm90cmUgSUQgQXBwbGUuIFNpIHZvdXMgcG9zc8OpZGV6IHVuIGNvbXB0ZSBTcG90aWZ5LCBjb25uZWN0ZXotdm91cyBhdmVjIHZvdHJlIGFkcmVzc2UgZS1tYWlsIG91IHZvdHJlIG5vbSBkJ3V0aWxpc2F0ZXVyIFNwb3RpZnkuIFNpIHZvdXMgbidhdmV6IHBhcyBkZSBjb21wdGUgU3BvdGlmeSwgaW5zY3JpdmV6LXZvdXMuIiwiY29udGludWVXaXRoQXBwbGUiOiJDb250aW51ZXIgYXZlYyBBcHBsZSIsImNvbnRpbnVlV2l0aEZhY2Vib29rIjoiQ29udGludWVyIGF2ZWMgRmFjZWJvb2siLCJjb250aW51ZVdpdGhQaG9uZU51bWJlciI6IkNvbnRpbnVlciBhdmVjIHVuIG51bcOpcm8gZGUgdMOpbMOpcGhvbmUiLCJjb250aW51ZVdpdGhHb29nbGUiOiJDb250aW51ZXIgYXZlYyBHb29nbGUiLCJlcnJvckdvb2dsZUFjY291bnQiOiJBdWN1biBjb21wdGXCoFNwb3RpZnkgbidlc3QgYXNzb2Npw6kgw6Agdm90cmUgY29tcHRlwqBHb29nbGUuIFNpIHZvdXMgcG9zc8OpZGV6IHVuIGNvbXB0ZcKgU3BvdGlmeSwgY29ubmVjdGV6LXZvdXMgYXZlYyB2b3RyZSBhZHJlc3NlIGUtbWFpbCBvdSB2b3RyZSBub20gZCd1dGlsaXNhdGV1csKgU3BvdGlmeS4gU2kgdm91cyBuJ2F2ZXogcGFzIGRlIGNvbXB0ZcKgU3BvdGlmeSwgaW5zY3JpdmV6LXZvdXMuIiwicmVjYXB0Y2hhTGVnYWxOb3RpY2UiOiJDZSBzaXRlIGVzdCBwcm90w6lnw6kgcGFyIHJlQ0FQVENIQS4gTGEgPGdvb2dsZVByaXZhY3lQb2xpY3lMaW5rPlBvbGl0aXF1ZSBkZSBjb25maWRlbnRpYWxpdMOpPC9nb29nbGVQcml2YWN5UG9saWN5TGluaz4gZXQgbGVzIDxnb29nbGVUZXJtc0xpbms+Q29uZGl0aW9ucyBkJ3V0aWxpc2F0aW9uIDwvZ29vZ2xlVGVybXNMaW5rPiBkZSBHb29nbGUgcydhcHBsaXF1ZW50LiIsImxvZ2luV2l0aG91dFBhc3N3b3JkIjoiQ29ubmV4aW9uIHNhbnMgbW90IGRlIHBhc3NlIiwibWFnaWNfbGlua19wb3B1cF9oZWFkZXIiOiJWb3VzIHJlbmNvbnRyZXogZGVzIHByb2Jsw6htZXMgcG91ciB2b3VzIGNvbm5lY3RlcsKgPyIsIm1hZ2ljX2xpbmtfcG9wdXBfYm9keSI6Ik5vdXMgdm91cyBhdm9ucyBlbnZvecOpIHVuIGUtbWFpbCBjb250ZW5hbnQgdW4gbGllbiBwb3VyIHZvdXMgY29ubmVjdGVyIHNhbnMgbW90IGRlIHBhc3NlLiIsImRpYWxvZ19fYWN0aW9uX3JldHJ5X2xvZ2luIjoiRXNzYXllciB1biBhdXRyZSBtb3QgZGUgcGFzc2UifQ=='>
+  <style>
+    body {
+      background-color: #121212;
+      margin: 0;
+    }
+    #root {
+      min-height: 100vh;
+    }
+    .loading-indicator-container {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .loading-indicator-container * {
+      box-sizing: border-box;
+    }
+    .loading-indicator {
+      content: "";
+      width: 56px;
+      inline-size: 56px;
+      block-size: 12.4px;
+      height: 12.4px;
+      overflow-clip-margin: content-box;
+      overflow: hidden;
+    }
+    .loading-indicator circle {
+      fill: white;
+      animation: loading-indicator-kf 1.32s linear infinite;
+      transform-origin: center center;
+      opacity: 0.5;
+    }
+    .loading-indicator circle:nth-of-type(2) {
+      animation-delay: 0.1s;
+    }
+    .loading-indicator circle:nth-of-type(3) {
+      animation-delay: 0.2s;
+    }
+    @keyframes loading-indicator-kf {
+      0% {
+        animation-timing-function: cubic-bezier(1, 0, 0.7, 1);
+        opacity: 0.5;
+        transform: scale(1);
+      }
+      40% {
+        animation-timing-function: cubic-bezier(0.3, 0, 0, 1);
+        opacity: 0.75;
+        transform: scale(1.3);
+      }
+      72.5% {
+        animation-timing-function: linear;
+        opacity: 0.5;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0.5;
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body class="encore-dark-theme encore-layout-themes">
+<div id="root">
+  <div class="loading-indicator-container">
+    <svg class="loading-indicator" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 1 100" xml:space="preserve" role="progressbar" aria-valuetext="Loading">
+      <circle stroke="none" cx="-140" cy="50" r="32"></circle>
+      <circle stroke="none" cx="0" cy="50" r="32"></circle>
+      <circle stroke="none" cx="140" cy="50" r="32"></circle>
+    </svg>
+  </div>
+</div>
+</body>
+</html>
+
