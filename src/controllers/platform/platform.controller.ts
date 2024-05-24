@@ -76,10 +76,17 @@ class PlatformController implements ControllerInterface {
         }, async (req: express.Request, accessToken: any, refreshToken: any, expiresIn: any, profile: any, done: any) => {
             try {
                 const authToken = req.headers.authorization;
+                console.log(authToken);
                 const user = await UserModel.findOne({ authToken });
                 if (!user) return done(null, false);
                 const platform = await PlatformModel.findOne({ id: 1 }); // Enumération Spotify
                 if (!platform) return done(null, false);
+
+                // Delete all previous links
+                await PlatformLinkModel.deleteMany({ user: user._id, platform: platform._id });
+
+                console.log(expiresIn);
+                console.log(refreshToken); // Token qui permet de faire la demande de refresh, see https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens
 
                 // Create the link between the user and the platform
                 const platformLink = new PlatformLinkModel({
