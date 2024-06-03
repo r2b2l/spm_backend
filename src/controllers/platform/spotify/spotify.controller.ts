@@ -39,12 +39,16 @@ class SpotifyController implements ControllerInterface {
         }
 
         const SpotifyLink = await PlatformLinkModel.findOne({ user: user._id, platform: platform._id });
-        console.log(user);
-        console.log(platform._id);
+
         if (!SpotifyLink) {
             throw new Error("Le token Spotify n'existe pas.");
         }
-        return SpotifyLink.token;
+        return {
+            token: SpotifyLink.token,
+            user,
+            platform,
+            platformLink: SpotifyLink
+        };
 
     }
 
@@ -60,9 +64,11 @@ class SpotifyController implements ControllerInterface {
             // get spotify profile
             const result = await axios.get(this.spotifyUrl + '/me', {
                 headers: {
-                    Authorization: `Bearer ${spotifyToken}`
+                    Authorization: `Bearer ${spotifyToken.token}`
                 }
             });
+
+            await PlatformLinkModel.updateOne({ _id: spotifyToken.platformLink._id }).set({ profileId: result.data.id, updatedAt: new Date() });
 
             return res.status(200).json(await result.data);
         } catch (error: any) {
@@ -78,7 +84,7 @@ class SpotifyController implements ControllerInterface {
             const spotifyToken = await this.getSpotifyToken(req, res);
             const result = await axios.get(this.spotifyUrl + '/me/playlists', {
                 headers: {
-                    Authorization: `Bearer ${spotifyToken}`
+                    Authorization: `Bearer ${spotifyToken.token}`
                 },
                 params: {
                     limit: 50,

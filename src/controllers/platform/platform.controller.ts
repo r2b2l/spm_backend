@@ -49,6 +49,7 @@ class PlatformController implements ControllerInterface {
         // this.router.post('/', this.login.bind(this)); // Bind this to login function to be able to call this.jwtService
         this.router.post(this.path + '/create', this.createPlatform);
         this.router.get(this.path + '/:id', this.getPlatformInformationsById);
+        this.router.patch(this.path + '/changePlatformUser', this.changeUserPlatformLink);
         this.router.patch(this.path + '/:id', this.updatePlatform);
         this.router.get(this.path + '/connect/spotify', passport.authenticate(
             'spotify',
@@ -78,6 +79,7 @@ class PlatformController implements ControllerInterface {
                 const authToken = req.headers.authorization;
                 console.log(authToken);
                 const user = await UserModel.findOne({ authToken });
+                console.log(user);
                 if (!user) return done(null, false);
                 const platform = await PlatformModel.findOne({ id: 1 }); // Enumération Spotify
                 if (!platform) return done(null, false);
@@ -135,6 +137,43 @@ class PlatformController implements ControllerInterface {
             response.status(400).json({ message: error.message });
         }
     }
+
+    /**
+     * Change the user linked to a platform.
+     *
+     * @param request - The HTTP request object.
+     * @param response - The HTTP response object.
+     */
+    async changeUserPlatformLink(request: express.Request, response: express.Response) {
+        const { originalMail, newMail, platformId } = request.body;
+
+        const originalUser = await UserModel.findOne({ mail: originalMail});
+
+        if (!originalUser) {
+            return response.status(401).json({ message: "Utilisateur d'origine incorrect." })
+        }
+
+        const newUser = await UserModel.findOne({ mail: newMail});
+
+        if (!newUser) {
+            return response.status(401).json({ message: "Utilisateur destinataire incorrect." })
+        }
+
+        const platform = await PlatformModel.findOne({ id: platformId });
+        if (!platform) {
+            throw new Error("La plateforme n'existe pas");
+        }
+
+        const platformLink = await PlatformLinkModel.findOne({ user: originalUser._id, platform: platform._id });
+        if (!platformLink) {
+            return response.status(401).json({ message: "Platform incorrect." })
+        }
+
+        await PlatformLinkModel.updateOne({ user: originalUser._id, platform: platform._id }).set({ user: newUser._id, updatedAt: new Date() });
+
+        response.status(200).json({ isSuccess: true });
+    }
+
 
     /**
      * SPOTIFY HANDCRAFTED
