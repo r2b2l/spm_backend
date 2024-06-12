@@ -4,6 +4,7 @@ import axios from "axios";
 import PlatformLinkModel from "../../../models/PlatformLink/PlatformLink.model";
 import UserModel from "../../../models/User/User.model";
 import PlatformModel from "../../../models/Platform/Platform.model";
+import PlaylistModel from "../../../models/Playlist/Playlist.model";
 
 /**
  * SpotifyController class that implements the ControllerInterface.
@@ -24,6 +25,7 @@ class SpotifyController implements ControllerInterface {
     public initializeRoutes() {
         this.router.get(this.path + '/profile', this.getSpotifyProfile.bind(this));
         this.router.get(this.path + '/playlists', this.getSpotifyPlaylists.bind(this));
+        this.router.get(this.path + '/playlist/:playlistId/tracks', this.getSpotifyPlaylistTracks.bind(this));
     }
 
     async getSpotifyToken(req: express.Request, res: express.Response) {
@@ -79,6 +81,9 @@ class SpotifyController implements ControllerInterface {
         }
     }
 
+    /**
+     * Retrieves and save the Spotify playlists for the authenticated user.
+     */
     async getSpotifyPlaylists(req: express.Request, res: express.Response) {
         try {
             const spotifyToken = await this.getSpotifyToken(req, res);
@@ -92,9 +97,74 @@ class SpotifyController implements ControllerInterface {
                 }
             });
 
+            // Save playlists in database
+            if (result.data.items.length > 0) {
+                for (const playlist of result.data.items) {
+                    // update or create playlist
+                    const searchPlaylist = await PlaylistModel.findOne({ id: playlist.id});
+
+                    if (!searchPlaylist) {
+                        // create playlist
+                        await PlaylistModel.create({
+                            user: spotifyToken.user._id,
+                            platform: spotifyToken.platform._id,
+                            id: playlist.id,
+                            name: playlist.name,
+                            description: playlist.description,
+                            externalUrl: playlist.external_urls.spotify,
+                            imageUrl: playlist.images[0].url,
+                            snapshot_id: playlist.snapshot_id,
+                            public: playlist.public,
+                            tracksNumber: playlist.tracks.total,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
+                    } else {
+                        // update playlist
+                        await PlaylistModel.updateOne({ id: playlist.id }).set({
+                            user: spotifyToken.user._id,
+                            platform: spotifyToken.platform._id,
+                            id: playlist.id,
+                            name: playlist.name,
+                            description: playlist.description,
+                            externalUrl: playlist.external_urls.spotify,
+                            imageUrl: playlist.images[0].url,
+                            snapshot_id: playlist.snapshot_id,
+                            public: playlist.public,
+                            tracksNumber: playlist.tracks.total,
+                            updatedAt: new Date()
+                        });
+                    }
+                }
+            }
+
             return res.status(200).json(await result.data);
         }
         catch (error: any) {
+            return res.status(500).json({
+                type: typeof error,
+                message: error.message
+            });
+        }
+    }
+
+    async getSpotifyPlaylistTracks(req: express.Request, res: express.Response) {
+        try {
+            const spotifyToken = await this.getSpotifyToken(req, res);
+            const playlistId = req.params.playlistId;
+            console.log(this.spotifyUrl + '/playlists/' + playlistId + '/tracks');
+            const result = await axios.get(this.spotifyUrl + '/playlists/' + playlistId + '/tracks', {
+                headers: {
+                    Authorization: `Bearer ${spotifyToken.token}`
+                },
+                params: {
+                    limit: 50,
+                    offset: 0
+                }
+            });
+
+            return res.status(200).json(await result.data);
+        } catch (error: any) {
             return res.status(500).json({
                 type: typeof error,
                 message: error.message
