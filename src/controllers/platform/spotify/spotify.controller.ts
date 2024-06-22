@@ -163,7 +163,47 @@ class SpotifyController implements ControllerInterface {
                 }
             });
 
-            return res.status(200).json(await result.data);
+            const response = await result.data;
+            let tracksItems = response.items;
+            if (response.total > 50) {
+                // repeat until all tracks are fetched
+                let offset = 50;
+                while (offset < response.total) {
+                    const result = await axios.get(this.spotifyUrl + '/playlists/' + playlistId + '/tracks', {
+                        headers: {
+                            Authorization: `Bearer ${spotifyToken.token}`
+                        },
+                        params: {
+                            limit: 50,
+                            offset: offset
+                        }
+                    });
+                    tracksItems = tracksItems.concat(result.data.items);
+                    offset += 50;
+                }
+            }
+            
+            let responseTracks: any = [];
+            tracksItems.forEach(async (track: any) => {
+                responseTracks.push({
+                    id: track.track.id,
+                    type: track.track.type,
+                    name: track.track.name,
+                    artists: track.track.artists,
+                    album: track.track.album,
+                    external: track.track.external_ids.isrc,
+                    addedAt: track.added_at
+                });
+
+                // Save tracks in database
+            });
+
+            const rawResult = false;
+            return res.status(200).json({ 
+                playlistId: playlistId,
+                items: rawResult ? tracksItems : responseTracks,
+                total: response.total
+            });
         } catch (error: any) {
             return res.status(500).json({
                 type: typeof error,
