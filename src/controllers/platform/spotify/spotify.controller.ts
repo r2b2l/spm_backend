@@ -5,6 +5,7 @@ import PlatformLinkModel from "../../../models/PlatformLink/PlatformLink.model";
 import UserModel from "../../../models/User/User.model";
 import PlatformModel from "../../../models/Platform/Platform.model";
 import PlaylistModel from "../../../models/Playlist/Playlist.model";
+import PlaylistTrackModel from "../../../models/Track/Track.model";
 
 /**
  * SpotifyController class that implements the ControllerInterface.
@@ -175,32 +176,71 @@ class SpotifyController implements ControllerInterface {
                         },
                         params: {
                             limit: 50,
-                            offset: offset
+                            offset
                         }
                     });
                     tracksItems = tracksItems.concat(result.data.items);
                     offset += 50;
                 }
             }
-            
-            let responseTracks: any = [];
+
+            // Get playlist model
+            const playlist = await PlaylistModel.findOne({ id: playlistId });
+            console.log('Playlist: ' + playlist?.name);
+
+            const responseTracks: any = [];
             tracksItems.forEach(async (track: any) => {
                 responseTracks.push({
                     id: track.track.id,
                     type: track.track.type,
                     name: track.track.name,
-                    artists: track.track.artists,
-                    album: track.track.album,
-                    external: track.track.external_ids.isrc,
+                    artists: track.track.artists.map((artist: any) => artist.name),
+                    album: track.track.album.name,
+                    isrc: track.track.external_ids.isrc,
+                    ean: track.track.external_ids.ean,
+                    upc: track.track.external_ids.upc,
                     addedAt: track.added_at
                 });
 
                 // Save tracks in database
+                const searchTrack = await PlaylistTrackModel.findOne({ id: track.track.id });
+                if (!searchTrack) {
+                    console.log('Track: ' + track.track.name + ' by ' +  track.track.artists[0].name + ' - NOT FOUND !');
+                    await PlaylistTrackModel.create({
+                        playlist,
+                        id: track.track.id,
+                        name: track.track.name,
+                        artists: track.track.artists.map((artist: any) => artist.name),
+                        albumName: track.track.album.name,
+                        type: track.track.type,
+                        isrc: track.track.external_ids.isrc,
+                        ean: track.track.external_ids.ean,
+                        upc: track.track.external_ids.upc,
+                        addedAt: track.added_at
+                    });
+                } else {
+                    // update playlistTrack
+                    console.log('Track: ' + track.track.name + ' by ' +  track.track.artists[0].name + ' - FOUND !');
+                    await PlaylistTrackModel.updateOne({ id: track.track.id }).set({
+                        playlist,
+                        id: track.track.id,
+                        name: track.track.name,
+                        artists: track.track.artists.forEach((artist: any) => {
+                            return artist.name;
+                        }),
+                        albumName: track.track.album.name,
+                        type: track.track.type,
+                        isrc: track.track.external_ids.isrc,
+                        ean: track.track.external_ids.ean,
+                        upc: track.track.external_ids.upc,
+                        addedAt: track.added_at
+                    });
+                }
             });
 
             const rawResult = false;
-            return res.status(200).json({ 
-                playlistId: playlistId,
+            return res.status(200).json({
+                playlistId,
                 items: rawResult ? tracksItems : responseTracks,
                 total: response.total
             });
