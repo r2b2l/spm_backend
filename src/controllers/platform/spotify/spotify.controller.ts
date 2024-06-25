@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction } from "express";
 import ControllerInterface from "../../controller.interface";
 import axios from "axios";
 import PlatformLinkModel from "../../../models/PlatformLink/PlatformLink.model";
@@ -6,6 +6,7 @@ import UserModel from "../../../models/User/User.model";
 import PlatformModel from "../../../models/Platform/Platform.model";
 import PlaylistModel from "../../../models/Playlist/Playlist.model";
 import PlaylistTrackModel from "../../../models/Track/Track.model";
+import HttpException from "../../../exceptions/HttpException";
 
 /**
  * SpotifyController class that implements the ControllerInterface.
@@ -142,14 +143,21 @@ class SpotifyController implements ControllerInterface {
             return res.status(200).json(await result.data);
         }
         catch (error: any) {
-            return res.status(500).json({
-                type: typeof error,
-                message: error.message
-            });
+            if (error instanceof HttpException) {
+                return res.status(error.status).json({
+                    type: typeof error,
+                    message: error.message
+                });
+            } else {
+                return res.status(500).json({
+                    type: typeof error,
+                    message: error.message
+                });
+            }
         }
     }
 
-    async getSpotifyPlaylistTracks(req: express.Request, res: express.Response) {
+    async getSpotifyPlaylistTracks(req: express.Request, res: express.Response,  next: NextFunction) {
         try {
             const spotifyToken = await this.getSpotifyToken(req, res);
             const playlistId = req.params.playlistId;
@@ -245,10 +253,18 @@ class SpotifyController implements ControllerInterface {
                 total: response.total
             });
         } catch (error: any) {
-            return res.status(500).json({
-                type: typeof error,
-                message: error.message
-            });
+            console.log('Error catched');
+            if (error instanceof HttpException) {
+                console.log('HttpException catched');
+                const httpException = new HttpException(error.status, error.message);
+                next(httpException);
+            } else {
+                console.log('Other error catched');
+                return res.status(500).json({
+                    type: typeof error,
+                    message: error.message
+                });
+            }
         }
     }
 }
