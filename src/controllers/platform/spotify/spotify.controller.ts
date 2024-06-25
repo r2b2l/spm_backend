@@ -7,6 +7,7 @@ import PlatformModel from "../../../models/Platform/Platform.model";
 import PlaylistModel from "../../../models/Playlist/Playlist.model";
 import PlaylistTrackModel from "../../../models/Track/Track.model";
 import HttpException from "../../../exceptions/HttpException";
+import { SpotifyException } from "../../../exceptions/SpotifyException";
 
 /**
  * SpotifyController class that implements the ControllerInterface.
@@ -253,13 +254,15 @@ class SpotifyController implements ControllerInterface {
                 total: response.total
             });
         } catch (error: any) {
-            console.log('Error catched');
-            if (error instanceof HttpException) {
-                console.log('HttpException catched');
-                const httpException = new HttpException(error.status, error.message);
-                next(httpException);
+            if (error.response) {
+                let httpError: HttpException | SpotifyException;
+                if (error.response.request.host === 'api.spotify.com') {
+                    httpError = new SpotifyException(error.response.status, error.response.data.error.message);
+                } else {
+                    httpError = new HttpException(error.response.status, error.response.statusText);
+                }
+                next(httpError);
             } else {
-                console.log('Other error catched');
                 return res.status(500).json({
                     type: typeof error,
                     message: error.message

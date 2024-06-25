@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import * as bodyParser from 'body-parser';
 import 'dotenv/config';
 import verifyTokenMiddleware from './middlewares/verifiyToken.middleware';
+import errorMiddleware from './middlewares/error.middleware';
 import cors from 'cors';
 
 const logRequestMiddleware: express.RequestHandler = (req, res, next) => {
@@ -23,8 +24,8 @@ class App {
     this.app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
     this.port = port;
 
-    this.initializeMiddlewares();
     this.initializeControllers(controllers);
+    this.initializeMiddlewares();
   }
 
   /**
@@ -34,6 +35,7 @@ class App {
     this.app.use(bodyParser.json());
     this.app.use(logRequestMiddleware);
     this.app.use(verifyTokenMiddleware);
+    this.app.use(errorMiddleware);
 
     /**
      * PassportJS section
