@@ -20,6 +20,9 @@ class App {
 
     // When in production use __dirname to have static folder, when in dev use src
     this.app.use('/static', express.static('./src/public'));
+    this.app.use(cors({
+      origin: 'http://localhost:4200' // or wherever you're serving your client from
+    }));
     this.app.use(bodyParser.json()); // for parsing application/json
     this.app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
     this.port = port;
