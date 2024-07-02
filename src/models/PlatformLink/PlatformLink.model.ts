@@ -6,6 +6,7 @@ const platformLinkSchema = new mongoose.Schema({
     profileId: String,
     isActive: Boolean,
     token: String,
+    refreshToken: String,
     tokenExpiresAt: Date,
     createdAt: Date,
     updatedAt: Date

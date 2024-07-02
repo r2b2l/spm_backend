@@ -5,6 +5,7 @@ import 'dotenv/config';
 import verifyTokenMiddleware from './middlewares/verifiyToken.middleware';
 import errorMiddleware from './middlewares/error.middleware';
 import cors from 'cors';
+import connectedUserMiddleware from './middlewares/connectedUser.middleware';
 
 const logRequestMiddleware: express.RequestHandler = (req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -27,8 +28,8 @@ class App {
     this.app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
     this.port = port;
 
-    this.initializeControllers(controllers);
     this.initializeMiddlewares();
+    this.initializeControllers(controllers);
   }
 
   /**
@@ -38,6 +39,7 @@ class App {
     this.app.use(bodyParser.json());
     this.app.use(logRequestMiddleware);
     this.app.use(verifyTokenMiddleware);
+    this.app.use(connectedUserMiddleware);
     this.app.use(errorMiddleware);
 
     /**
