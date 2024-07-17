@@ -100,6 +100,8 @@ class SpotifyController implements ControllerInterface {
                 }
             });
 
+            const playlists = [];
+
             // Save playlists in database
             if (result.data.items.length > 0) {
                 for (const playlist of result.data.items) {
@@ -138,10 +140,26 @@ class SpotifyController implements ControllerInterface {
                             updatedAt: new Date()
                         });
                     }
+
+                    // Add playlist to json response
+                    playlists.push({
+                        id: playlist.id,
+                        name: playlist.name,
+                        description: playlist.description,
+                        ownerName: playlist.owner.display_name,
+                        externalUrl: playlist.external_urls.spotify,
+                        imageUrl: playlist.images[0].url,
+                        snapshot_id: playlist.snapshot_id,
+                        isPublic: playlist.public,
+                        tracksNumber: playlist.tracks.total,
+                        updatedAt: new Date()
+                    });
                 }
+
+                return res.status(200).json(playlists);
             }
 
-            return res.status(200).json(await result.data);
+            return res.status(200).json([]);
         }
         catch (error: any) {
             if (error instanceof HttpException) {

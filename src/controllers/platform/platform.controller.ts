@@ -5,6 +5,9 @@ import PlatformDto from '../../models/Platform/Platform.dto';
 import PlatformLinkModel from '../../models/PlatformLink/PlatformLink.model';
 import UserModel from '../../models/User/User.model';
 import UtilsService from '../../services/utilsService';
+import axios from 'axios';
+import { json } from 'stream/consumers';
+import qs from 'qs';
 
 // const passport = require('passport');
 // const SpotifyStrategy = require('passport-spotify').Strategy;
@@ -195,20 +198,17 @@ class PlatformController implements ControllerInterface {
         }
 
         const currentDate = new Date().toISOString();
-        const platformLink = await PlatformLinkModel.find({ user, platform, tokenExpiresAt: { $gte: currentDate }  });
+        const platformLink = await PlatformLinkModel.find({ user, platform, tokenExpiresAt: { $gte: currentDate } });
 
         if (platformLink.length === 0) {
             return response.status(200).json({ isSuccess: true, isConnected: false });
         }
 
-        for (const link of platformLink) {
-            console.log(link);
-            // if (link.tokenExpiresAt < new Date()) {
-                // return response.status(200).json({ isSuccess: true, platformLink: link });
-            // }
-        }
+        // for (const link of platformLink) {
+        //     console.log(link);
+        // }
 
-        response.status(200).json({ isSuccess: true, isConnected: true, comment: "Les validités des tokens ne sont pas controlées."});
+        response.status(200).json({ isSuccess: true, isConnected: true, comment: "Les validités des tokens ne sont pas controlées." });
     }
 
 
@@ -218,6 +218,8 @@ class PlatformController implements ControllerInterface {
         const scope = 'user-read-private user-read-email';
         // clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
         const spotifyAuthUrl = `https://accounts.spotify.com/authorize?client_id=${clientID}&response_type=code&redirect_uri=${encodeURIComponent(callbackURL)}&scope=${encodeURIComponent(scope)}`;
+
+        console.log('Authorized passed, go to: ' + spotifyAuthUrl);
         // Retourner l'URL d'authentification au client
         response.status(200).json({ url: spotifyAuthUrl });
     }
@@ -230,17 +232,119 @@ class PlatformController implements ControllerInterface {
      * @param response
      */
     async connectCallback(request: express.Request, response: express.Response) {
-        console.log('COUCOU');
-        // console.log(response);
-        const code = request.query.code;
-        console.log(code);
-        // Ask https://accounts.spotify.com/api/token for the access token
-        const url = 'https://accounts.spotify.com/api/token';
-        const clientID = process.env.SPOTIFY_CLIENT_ID;
-        const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-        const redirectUri = process.env.SPOTIFY_CALLBACK_URL ? process.env.SPOTIFY_CALLBACK_URL : 'http://localhost:3000/platform/connect/spotify/callback';
-        // ETC
-        response.redirect('http://localhost:4200/spotify');
+        if (request.query.code) {
+            console.log('User accepted Spotify connection');
+            const code = request.query.code;
+            console.log('Code Spotify:');
+            console.log(code);
+
+            const state = request.query.state;
+            console.log('State:');
+            console.log(state);
+
+            const apiAuthToken = request.query.token;
+            console.log('Own Auth token: ');
+            console.log(apiAuthToken);
+
+            // Ask https://accounts.spotify.com/api/token for the access token
+            const url = 'https://accounts.spotify.com/api/token';
+            const clientID = process.env.SPOTIFY_CLIENT_ID;
+            const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+            const redirectUri = process.env.SPOTIFY_CALLBACK_URL ? process.env.SPOTIFY_CALLBACK_URL : 'http://localhost:3000/platform/connect/spotify/callback';
+
+            const clientEncoded = Buffer.from(clientID + ':' + clientSecret).toString('base64');
+
+            const data = qs.stringify({
+                code,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code',
+            });
+            const options = {
+                headers: {
+                    'Authorization': 'Basic ' + clientEncoded,
+                    'Content-type': 'application/x-www-form-urlencoded'
+                }
+            }
+
+            await axios.post(url, data, options)
+                .then(async (result) => {
+                    const access_token = result.data.access_token;
+                    const refresh_token = result.data.refresh_token;
+                    const expires_in = result.data.expires_in;
+
+                    // Save the token in the database
+                    const user = await UserModel.findOne({ apiAuthToken });
+                    console.log('User: ');
+                    console.log(user);
+                    const platform = await PlatformModel.findOne({ id: 1 }); // Enumération Spotify
+
+                    if (user && platform) {
+                        // Delete all previous links
+                        await PlatformLinkModel.deleteMany({ user: user._id, platform: platform._id });
+
+                        // Create the link between the user and the platform
+                        const platformLink = new PlatformLinkModel({
+                            user: user._id,
+                            platform: platform._id,
+                            isActive: true,
+                            token: access_token,
+                            refreshToken: refresh_token,
+                            tokenExpiresAt: new Date(Date.now() + expires_in * 1000), // expires_in is in seconds, add it to the current date to get the expiration date
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        });
+
+                        await platformLink.save();
+
+                        console.log('Spotify token saved !');
+                        response.redirect('http://localhost:4200/spotify');
+                    }
+                })
+                .catch((error) => {
+                    console.log(error.code);
+                    console.log(error.response.status);
+                    console.log(error.response.statusText);
+                });
+
+            // const access_token = result.data.access_token;
+            // const refresh_token = result.data.refresh_token;
+            // const expires_in = result.data.expires_in;
+
+            // // Save the token in the database
+            // const authToken = request.headers.authorization;
+            // console.log('SPM authToken: ');
+            // console.log(authToken);
+            // const user = await UserModel.findOne({ authToken });
+            // const platform = await PlatformModel.findOne({ id: 1 }); // Enumération Spotify
+
+            // if (user && platform) {
+            //     // Delete all previous links
+            //     await PlatformLinkModel.deleteMany({ user: user._id, platform: platform._id });
+
+            //     // Create the link between the user and the platform
+            //     const platformLink = new PlatformLinkModel({
+            //         user: user._id,
+            //         platform: platform._id,
+            //         isActive: true,
+            //         token: access_token,
+            //         refreshToken: refresh_token,
+            //         tokenExpiresAt: expires_in,
+            //         createdAt: new Date(),
+            //         updatedAt: new Date()
+            //     });
+
+            //     await platformLink.save();
+
+            //     console.log('Spotify token saved !');
+            // }
+
+            // response.redirect('http://localhost:4200/spotify');
+        }
+        if (request.query.error) {
+            console.log('User refused Spotify connection');
+            console.log(request.query.error);
+            response.redirect('http://localhost:4200/spotify');
+        }
     }
 
     /**
