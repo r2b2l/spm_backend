@@ -10,7 +10,9 @@ const playlistTrackSchema = new mongoose.Schema({
     isrc: String,
     ean: String,
     upc: String,
-    addedAt: Date
+    disabled: Boolean,
+    addedAt: Date,
+    updatedAt: Date
 });
 
 interface PlaylistTrackType {
@@ -23,7 +25,9 @@ interface PlaylistTrackType {
     isrc: string,
     ean: string,
     upc: string,
-    addedAt: Date
+    disabled: boolean,
+    addedAt: Date,
+    updatedAt: Date
 }
 
 const PlaylistTrackModel = mongoose.model<PlaylistTrackType>('PlaylistTrack', playlistTrackSchema);

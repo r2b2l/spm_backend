@@ -29,6 +29,7 @@ class SpotifyController implements ControllerInterface {
         this.router.get(this.path + '/profile', this.getSpotifyProfile.bind(this));
         this.router.get(this.path + '/playlists', this.getSpotifyPlaylists.bind(this));
         this.router.get(this.path + '/playlist/:playlistId/tracks', this.getSpotifyPlaylistTracks.bind(this));
+        this.router.patch(this.path + '/playlist/:playlistId/disableTracks', this.disablePlaylistTracks.bind(this));
     }
 
     async getSpotifyToken(req: express.Request, res: express.Response) {
@@ -106,7 +107,7 @@ class SpotifyController implements ControllerInterface {
             if (result.data.items.length > 0) {
                 for (const playlist of result.data.items) {
                     // update or create playlist
-                    const searchPlaylist = await PlaylistModel.findOne({ id: playlist.id});
+                    const searchPlaylist = await PlaylistModel.findOne({ id: playlist.id });
 
                     if (!searchPlaylist) {
                         // create playlist
@@ -176,7 +177,14 @@ class SpotifyController implements ControllerInterface {
         }
     }
 
-    async getSpotifyPlaylistTracks(req: express.Request, res: express.Response,  next: NextFunction) {
+    /**
+     * Retrieves the tracks of a Spotify playlist.
+     * @param req - The express Request object.
+     * @param res - The express Response object.
+     * @param next - The express NextFunction object.
+     * @returns The tracks of the Spotify playlist as a JSON response.
+     */
+    async getSpotifyPlaylistTracks(req: express.Request, res: express.Response, next: NextFunction) {
         try {
             const spotifyToken = await this.getSpotifyToken(req, res);
             const playlistId = req.params.playlistId;
@@ -213,55 +221,58 @@ class SpotifyController implements ControllerInterface {
 
             // Get playlist model
             const playlist = await PlaylistModel.findOne({ id: playlistId });
-            console.log('Playlist: ' + playlist?.name);
 
             const responseTracks: any = [];
             tracksItems.forEach(async (track: any) => {
-                responseTracks.push({
-                    id: track.track.id,
-                    type: track.track.type,
-                    name: track.track.name,
-                    artists: track.track.artists.map((artist: any) => artist.name),
-                    album: track.track.album.name,
-                    isrc: track.track.external_ids.isrc,
-                    ean: track.track.external_ids.ean,
-                    upc: track.track.external_ids.upc,
-                    addedAt: track.added_at
-                });
-
-                // Save tracks in database
-                const searchTrack = await PlaylistTrackModel.findOne({ id: track.track.id });
-                if (!searchTrack) {
-                    console.log('Track: ' + track.track.name + ' by ' +  track.track.artists[0].name + ' - NOT FOUND !');
-                    await PlaylistTrackModel.create({
-                        playlist,
+                if (track.is_local === false) {
+                    responseTracks.push({
                         id: track.track.id,
+                        type: track.track.type,
                         name: track.track.name,
                         artists: track.track.artists.map((artist: any) => artist.name),
-                        albumName: track.track.album.name,
-                        type: track.track.type,
+                        album: track.track.album.name,
                         isrc: track.track.external_ids.isrc,
                         ean: track.track.external_ids.ean,
                         upc: track.track.external_ids.upc,
                         addedAt: track.added_at
                     });
-                } else {
-                    // update playlistTrack
-                    console.log('Track: ' + track.track.name + ' by ' +  track.track.artists[0].name + ' - FOUND !');
-                    await PlaylistTrackModel.updateOne({ id: track.track.id }).set({
-                        playlist,
-                        id: track.track.id,
-                        name: track.track.name,
-                        artists: track.track.artists.forEach((artist: any) => {
-                            return artist.name;
-                        }),
-                        albumName: track.track.album.name,
-                        type: track.track.type,
-                        isrc: track.track.external_ids.isrc,
-                        ean: track.track.external_ids.ean,
-                        upc: track.track.external_ids.upc,
-                        addedAt: track.added_at
-                    });
+
+                    // Save tracks in database
+                    const searchTrack = await PlaylistTrackModel.findOne({ id: track.track.id });
+                    if (!searchTrack) {
+                        console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - NOT FOUND !');
+                        await PlaylistTrackModel.create({
+                            playlist,
+                            id: track.track.id,
+                            name: track.track.name,
+                            artists: track.track.artists.map((artist: any) => artist.name),
+                            albumName: track.track.album.name,
+                            type: track.track.type,
+                            isrc: track.track.external_ids.isrc,
+                            ean: track.track.external_ids.ean,
+                            upc: track.track.external_ids.upc,
+                            disabled: false,
+                            addedAt: track.added_at,
+                            updatedAt: new Date()
+                        });
+                    } else {
+                        // update playlistTrack
+                        console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - ALREADY IN PLAYLIST !');
+                        // await PlaylistTrackModel.updateOne({ id: track.track.id }).set({
+                        //     playlist,
+                        //     id: track.track.id,
+                        //     name: track.track.name,
+                        //     artists: track.track.artists.forEach((artist: any) => {
+                        //         return artist.name;
+                        //     }),
+                        //     albumName: track.track.album.name,
+                        //     type: track.track.type,
+                        //     isrc: track.track.external_ids.isrc,
+                        //     ean: track.track.external_ids.ean,
+                        //     upc: track.track.external_ids.upc,
+                        //     addedAt: track.added_at
+                        // });
+                    }
                 }
             });
 
@@ -287,6 +298,34 @@ class SpotifyController implements ControllerInterface {
                 });
             }
         }
+    }
+
+    async disablePlaylistTracks(req: express.Request, res: express.Response) {
+        // Set disable to true or false for all tracks json array for playlistId
+        const playlistId = req.params.playlistId;
+        const tracksIds = req.body.tracksIds;
+        const isDisabled = req.body.disableTracks;
+
+        const playlist = await PlaylistModel.findOne({ id: playlistId });
+        if (!playlist) {
+            return res.status(404).json({
+                message: 'Playlist not found'
+            });
+        }
+
+        const returnedTracks = [];
+        for (const trackId of tracksIds) {
+            const filter = { playlist: playlist._id, 'id': trackId};
+            const update = { disabled: isDisabled, updatedAt: new Date() };
+
+            returnedTracks.push(await PlaylistTrackModel.findOneAndUpdate(filter, update));
+        }
+
+        // Retourner les tracks sans les propriétés inutiles
+        return res.status(200).json({
+            isSuccess: true,
+            tracks: returnedTracks
+        });
     }
 }
 
