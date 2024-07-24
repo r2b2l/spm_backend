@@ -275,6 +275,11 @@ class SpotifyController implements ControllerInterface {
                 }
             }));
 
+            // Sort responseTracks by addedAt date in descending order
+            responseTracks.sort((a: any, b: any) => {
+                return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
+            });
+
             // Wait for all tracks to be processed before returning the response
             return res.status(200).json({
                 playlistId,
