@@ -189,6 +189,14 @@ class SpotifyController implements ControllerInterface {
         try {
             const spotifyToken = await this.getSpotifyToken(req, res);
             const playlistId = req.params.playlistId;
+
+            // Get playlist model
+            const playlist = await PlaylistModel.findOne({ id: playlistId });
+
+            if (!playlist) {
+                throw new HttpException(404, 'Playlist not found');
+            }
+
             console.log(this.spotifyUrl + '/playlists/' + playlistId + '/tracks');
             const result = await axios.get(this.spotifyUrl + '/playlists/' + playlistId + '/tracks', {
                 headers: {
@@ -220,43 +228,52 @@ class SpotifyController implements ControllerInterface {
                 }
             }
 
-            // Get playlist model
-            const playlist = await PlaylistModel.findOne({ id: playlistId });
+            // Get all tracks from the playlist in the database
+            const playlistTracks = await PlaylistTrackModel.find({ playlist: playlist._id });
 
             const responseTracks: any = [];
             const rawResult = false;
 
             await Promise.all(tracksItems.map(async (track: any) => {
                 if (track.is_local === false) {
-                    const searchTrack = await PlaylistTrackModel.findOne({ id: track.track.id });
+                    const searchTrack = await PlaylistTrackModel.findOne({ id: track.track.id, playlist: playlist._id });
                     if (!searchTrack) {
                         console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - NOT FOUND !');
-                        await PlaylistTrackModel.create({
-                            playlist,
-                            id: track.track.id,
-                            name: track.track.name,
-                            artists: track.track.artists.map((artist: any) => artist.name),
-                            albumName: track.track.album.name,
-                            type: track.track.type,
-                            isrc: track.track.external_ids.isrc,
-                            ean: track.track.external_ids.ean,
-                            upc: track.track.external_ids.upc,
-                            disabled: false,
-                            addedAt: track.added_at,
-                            updatedAt: new Date()
-                        });
-                        responseTracks.push({
-                            id: track.track.id,
-                            type: track.track.type,
-                            name: track.track.name,
-                            artists: track.track.artists.map((artist: any) => artist.name),
-                            album: track.track.album.name,
-                            isrc: track.track.external_ids.isrc,
-                            ean: track.track.external_ids.ean,
-                            upc: track.track.external_ids.upc,
-                            addedAt: track.added_at,
-                            disabled: false
-                        });
+
+                        // Find if track is already in the database.
+                        // If found, delete in PlaylistTrackModel. 
+                        // If not found, create in PlaylistTrackModel
+                        const trackInDb = await PlaylistTrackModel.findOne({ id: track.track.id });
+                        if (trackInDb) {
+                            await PlaylistTrackModel.deleteOne({ id: track.track.id });
+                        } else {
+                            await PlaylistTrackModel.create({
+                                playlist,
+                                id: track.track.id,
+                                name: track.track.name,
+                                artists: track.track.artists.map((artist: any) => artist.name),
+                                albumName: track.track.album.name,
+                                type: track.track.type,
+                                isrc: track.track.external_ids.isrc,
+                                ean: track.track.external_ids.ean,
+                                upc: track.track.external_ids.upc,
+                                disabled: false,
+                                addedAt: track.added_at,
+                                updatedAt: new Date()
+                            });
+                            responseTracks.push({
+                                id: track.track.id,
+                                type: track.track.type,
+                                name: track.track.name,
+                                artists: track.track.artists.map((artist: any) => artist.name),
+                                album: track.track.album.name,
+                                isrc: track.track.external_ids.isrc,
+                                ean: track.track.external_ids.ean,
+                                upc: track.track.external_ids.upc,
+                                addedAt: track.added_at,
+                                disabled: false
+                            });
+                        }
                     } else {
                         console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - ALREADY IN PLAYLIST !');
                         responseTracks.push({
