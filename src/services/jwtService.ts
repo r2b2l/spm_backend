@@ -1,5 +1,5 @@
 import * as express from "express";
-import jwt, { Secret } from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -12,7 +12,9 @@ class JwtService {
      * @returns
      */
     generateToken(userId: string): string {
-        return jwt.sign({ userId }, this.secretKey, { expiresIn: process.env.API_JWT_EXPIRES_IN });
+        const expiresIn = process.env.API_JWT_EXPIRES_IN as string;
+        const options = { expiresIn } as SignOptions;
+        return jwt.sign({ userId }, this.secretKey, options);
     }
 
     /**

@@ -198,7 +198,7 @@ class SpotifyController implements ControllerInterface {
             }
 
             console.log(this.spotifyUrl + '/playlists/' + playlistId + '/tracks');
-            const result = await axios.get(this.spotifyUrl + '/playlists/' + playlistId + '/tracks', {
+            const tracksResult = await axios.get(this.spotifyUrl + '/playlists/' + playlistId + '/tracks', {
                 headers: {
                     Authorization: `Bearer ${spotifyToken.token}`
                 },
@@ -208,7 +208,7 @@ class SpotifyController implements ControllerInterface {
                 }
             });
 
-            const response = await result.data;
+            const response = await tracksResult.data;
             let tracksItems = response.items;
             if (response.total > 50) {
                 // repeat until all tracks are fetched
@@ -238,15 +238,17 @@ class SpotifyController implements ControllerInterface {
                 if (track.is_local === false) {
                     const searchTrack = await PlaylistTrackModel.findOne({ id: track.track.id, playlist: playlist._id });
                     if (!searchTrack) {
-                        console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - NOT FOUND !');
+                        // console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - NOT FOUND !');
 
                         // Find if track is already in the database.
-                        // If found, delete in PlaylistTrackModel. 
+                        // If found, delete in PlaylistTrackModel.
                         // If not found, create in PlaylistTrackModel
                         const trackInDb = await PlaylistTrackModel.findOne({ id: track.track.id });
                         if (trackInDb) {
+                            console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - NOT FOUND ! - DELETED !');
                             await PlaylistTrackModel.deleteOne({ id: track.track.id });
                         } else {
+                            console.log('Track: ' + track.track.name + ' by ' + track.track.artists[0].name + ' - NOT FOUND ! - ADDED TO PLAYLIST !');
                             await PlaylistTrackModel.create({
                                 playlist,
                                 id: track.track.id,
