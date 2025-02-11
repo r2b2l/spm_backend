@@ -107,6 +107,7 @@ class SpotifyController implements ControllerInterface {
             // Save playlists in database
             if (result.data.items.length > 0) {
                 for (const playlist of result.data.items) {
+                    // console.log('Playlist: ' + playlist.name, ' - Publique ? ', playlist.public);
                     // update or create playlist
                     const searchPlaylist = await PlaylistModel.findOne({ id: playlist.id });
 
@@ -121,7 +122,7 @@ class SpotifyController implements ControllerInterface {
                             externalUrl: playlist.external_urls.spotify,
                             imageUrl: playlist.images[0].url,
                             snapshot_id: playlist.snapshot_id,
-                            public: playlist.public,
+                            isPublic: playlist.public,
                             tracksNumber: playlist.tracks.total,
                             createdAt: new Date(),
                             updatedAt: new Date()
@@ -137,7 +138,7 @@ class SpotifyController implements ControllerInterface {
                             externalUrl: playlist.external_urls.spotify,
                             imageUrl: playlist.images[0].url,
                             snapshot_id: playlist.snapshot_id,
-                            public: playlist.public,
+                            isPublic: playlist.public,
                             tracksNumber: playlist.tracks.total,
                             updatedAt: new Date()
                         });

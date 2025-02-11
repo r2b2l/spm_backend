@@ -9,7 +9,7 @@ const playlistSchema = new mongoose.Schema({
     externalUrl: String,
     imageUrl: String,
     snapshot_id: String,
-    public: Boolean,
+    isPublic: Boolean,
     tracksNumber: Number,
     createdAt: Date,
     updatedAt: Date
@@ -24,7 +24,7 @@ interface PlaylistType {
     externalUrl: string,
     imageUrl: string,
     snapshot_id: string,
-    public: boolean,
+    isPublic: boolean,
     tracksNumber: number,
     createdAt: Date,
     updatedAt: Date
