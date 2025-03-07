@@ -92,6 +92,7 @@ class SpotifyController implements ControllerInterface {
     async getSpotifyPlaylists(req: express.Request, res: express.Response) {
         try {
             const spotifyToken = await this.getSpotifyToken(req, res);
+            console.log('Spotify token: ', spotifyToken);
             const result = await axios.get(this.spotifyUrl + '/me/playlists', {
                 headers: {
                     Authorization: `Bearer ${spotifyToken.token}`
