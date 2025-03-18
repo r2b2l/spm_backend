@@ -75,6 +75,8 @@ class SpotifyController implements ControllerInterface {
                 }
             });
 
+            // console.log('Spotify profile: ', result.data);
+
             await PlatformLinkModel.updateOne({ _id: spotifyToken.platformLink._id }).set({ profileId: result.data.id, updatedAt: new Date() });
 
             return res.status(200).json(await result.data);
@@ -92,7 +94,7 @@ class SpotifyController implements ControllerInterface {
     async getSpotifyPlaylists(req: express.Request, res: express.Response) {
         try {
             const spotifyToken = await this.getSpotifyToken(req, res);
-            console.log('Spotify token: ', spotifyToken);
+            // console.log('Spotify token: ', spotifyToken);
             const result = await axios.get(this.spotifyUrl + '/me/playlists', {
                 headers: {
                     Authorization: `Bearer ${spotifyToken.token}`
@@ -103,12 +105,14 @@ class SpotifyController implements ControllerInterface {
                 }
             });
 
+            // console.log('Authorization: '+  `Bearer ${spotifyToken.token}`);
+            // console.log('Spotify playlists: ', result.data);
+
             const playlists = [];
 
             // Save playlists in database
             if (result.data.items.length > 0) {
                 for (const playlist of result.data.items) {
-                    // console.log('Playlist: ' + playlist.name, ' - Publique ? ', playlist.public);
                     // update or create playlist
                     const searchPlaylist = await PlaylistModel.findOne({ id: playlist.id });
 
@@ -121,7 +125,7 @@ class SpotifyController implements ControllerInterface {
                             name: playlist.name,
                             description: playlist.description,
                             externalUrl: playlist.external_urls.spotify,
-                            imageUrl: playlist.images[0].url,
+                            imageUrl: playlist.images?.[0]?.url || null,
                             snapshot_id: playlist.snapshot_id,
                             isPublic: playlist.public,
                             tracksNumber: playlist.tracks.total,
@@ -137,7 +141,7 @@ class SpotifyController implements ControllerInterface {
                             name: playlist.name,
                             description: playlist.description,
                             externalUrl: playlist.external_urls.spotify,
-                            imageUrl: playlist.images[0].url,
+                            imageUrl: playlist.images?.[0]?.url || null,
                             snapshot_id: playlist.snapshot_id,
                             isPublic: playlist.public,
                             tracksNumber: playlist.tracks.total,
@@ -152,12 +156,13 @@ class SpotifyController implements ControllerInterface {
                         description: playlist.description,
                         ownerName: playlist.owner.display_name,
                         externalUrl: playlist.external_urls.spotify,
-                        imageUrl: playlist.images[0].url,
+                        imageUrl: playlist.images?.[0]?.url || null,
                         snapshot_id: playlist.snapshot_id,
                         isPublic: playlist.public,
                         tracksNumber: playlist.tracks.total,
                         updatedAt: new Date()
                     });
+                    console.log('Playlist: ' + playlist.name + ' - DONE !');
                 }
 
                 return res.status(200).json(playlists);

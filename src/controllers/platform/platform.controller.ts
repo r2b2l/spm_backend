@@ -233,18 +233,18 @@ class PlatformController implements ControllerInterface {
      */
     async connectCallback(request: express.Request, response: express.Response) {
         if (request.query.code) {
-            console.log('User accepted Spotify connection');
+            // console.log('User accepted Spotify connection');
             const code = request.query.code;
-            console.log('Code Spotify:');
-            console.log(code);
+            // console.log('Code Spotify:');
+            // console.log(code);
 
             const state = request.query.state;
-            console.log('State:');
-            console.log(state);
+            // console.log('State:');
+            // console.log(state);
 
             const apiAuthToken = request.query.token;
-            console.log('Own Auth token: ');
-            console.log(apiAuthToken);
+            // console.log('Own Auth token: ');
+            // console.log(apiAuthToken);
 
             // Ask https://accounts.spotify.com/api/token for the access token
             const url = 'https://accounts.spotify.com/api/token';
@@ -268,6 +268,8 @@ class PlatformController implements ControllerInterface {
 
             await axios.post(url, data, options)
                 .then(async (result) => {
+                    console.log('Result:');
+                    console.log(result.data);
                     const access_token = result.data.access_token;
                     const refresh_token = result.data.refresh_token;
                     const expires_in = result.data.expires_in;
