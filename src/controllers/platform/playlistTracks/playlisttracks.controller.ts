@@ -32,7 +32,8 @@ class PlaylistTracksController implements ControllerInterface {
             });
         }
 
-        const tracks = await PlaylistTracksModel.find({ playlist: playlist._id });
+        const tracks = await PlaylistTracksModel.find({ playlist: playlist._id }).sort({ addedAt: -1 });
+
         return res.status(200).json(tracks);
     }
 
